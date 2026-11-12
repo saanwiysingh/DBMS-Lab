@@ -1,0 +1,349 @@
+
+-- Q1(a). Create CLIENT_MASTER table with named constraints
+
+CREATE TABLE CLIENT_MASTER (
+    CLIENT_NO VARCHAR2(5),
+    NAME VARCHAR2(20)
+        CONSTRAINT UQ_CLIENT_NAME UNIQUE
+        CONSTRAINT NN_CLIENT_NAME NOT NULL,
+    ADDRESS1 VARCHAR2(30),
+    STATE VARCHAR2(30),
+    CITY VARCHAR2(15),
+
+    CONSTRAINT PK_CLIENT PRIMARY KEY (CLIENT_NO),
+    CONSTRAINT CK_CLIENT_NO CHECK (CLIENT_NO LIKE 'C%'),
+    CONSTRAINT CK_CLIENT_CITY CHECK (
+        CITY IN ('Delhi', 'Mumbai', 'Chennai')
+    )
+);
+
+
+-- Q1(b). Create PRODUCTS_MASTER table with named constraints
+
+CREATE TABLE PRODUCTS_MASTER (
+    PRODUCT_NO VARCHAR2(10),
+    DESCRIPTION VARCHAR2(20)
+        CONSTRAINT NN_PRODUCT_DESC NOT NULL
+        CONSTRAINT UQ_PRODUCT_DESC UNIQUE,
+    QTY_ON_HAND NUMBER(8),
+    SELL_PRICE NUMBER(8,2)
+        CONSTRAINT NN_SELL_PRICE NOT NULL,
+    COST_PRICE NUMBER(8,2)
+        CONSTRAINT NN_COST_PRICE NOT NULL,
+
+    CONSTRAINT PK_PRODUCT PRIMARY KEY (PRODUCT_NO),
+    CONSTRAINT CK_PRODUCT_NO CHECK (PRODUCT_NO LIKE 'P%'),
+    CONSTRAINT CK_PRODUCT_QTY CHECK (QTY_ON_HAND > 10)
+);
+
+
+-- Q1(c). Create SALES_ORDER table with named constraints
+
+CREATE TABLE SALES_ORDER (
+    S_ORDER_NO VARCHAR2(10),
+    S_ORDER_DATE DATE,
+    CLIENT_NO VARCHAR2(5),
+    SALESMAN_NO VARCHAR2(10),
+    PRODUCT_NO VARCHAR2(10),
+
+    CONSTRAINT PK_SALES_ORDER PRIMARY KEY (S_ORDER_NO),
+    CONSTRAINT CK_ORDER_NO CHECK (S_ORDER_NO LIKE 'O%'),
+    CONSTRAINT CK_SALESMAN_NO CHECK (SALESMAN_NO LIKE 'S%'),
+    CONSTRAINT FK_ORDER_CLIENT FOREIGN KEY (CLIENT_NO)
+        REFERENCES CLIENT_MASTER(CLIENT_NO),
+    CONSTRAINT FK_ORDER_PRODUCT FOREIGN KEY (PRODUCT_NO)
+        REFERENCES PRODUCTS_MASTER(PRODUCT_NO)
+);
+
+
+-- Insert records into CLIENT_MASTER
+
+INSERT INTO CLIENT_MASTER VALUES
+('C01', 'Ivaan', 'Church Rd', 'Maharashtra', 'Mumbai');
+
+INSERT INTO CLIENT_MASTER VALUES
+('C02', 'Vandana', 'St.Mary Rd', 'Tamil Nadu', 'Chennai');
+
+INSERT INTO CLIENT_MASTER VALUES
+('C03', 'Pramada', 'Mall Rd', 'Maharashtra', 'Mumbai');
+
+INSERT INTO CLIENT_MASTER VALUES
+('C04', 'Basu', 'Church Rd', 'Maharashtra', 'Mumbai');
+
+INSERT INTO CLIENT_MASTER VALUES
+('C05', 'Ravi', 'Chandni', NULL, 'Delhi');
+
+INSERT INTO CLIENT_MASTER VALUES
+('C06', 'Rukmini', 'Mall Rd', 'Maharashtra', 'Mumbai');
+
+
+-- Insert records into PRODUCTS_MASTER
+
+INSERT INTO PRODUCTS_MASTER VALUES
+('P01', '1.44 Floppies', 100, 525, 500);
+
+INSERT INTO PRODUCTS_MASTER VALUES
+('P02', 'Monitors', 25, 12000, 11280);
+
+INSERT INTO PRODUCTS_MASTER VALUES
+('P03', 'Mouse', 20, 1050, 1000);
+
+INSERT INTO PRODUCTS_MASTER VALUES
+('P04', '1.22 floppies', 100, 525, 500);
+
+INSERT INTO PRODUCTS_MASTER VALUES
+('P05', 'Keyboards', 15, 3150, 3050);
+
+INSERT INTO PRODUCTS_MASTER VALUES
+('P06', 'Cd drive', 14, 5250, 5100);
+
+
+-- Insert records into SALES_ORDER
+
+INSERT INTO SALES_ORDER VALUES
+('O19001', TO_DATE('12-JAN-1996','DD-MON-YYYY'),
+ 'C01', 'S01', 'P01');
+
+INSERT INTO SALES_ORDER VALUES
+('O19002', TO_DATE('25-JAN-1996','DD-MON-YYYY'),
+ 'C02', 'S02', 'P02');
+
+INSERT INTO SALES_ORDER VALUES
+('O19003', TO_DATE('18-FEB-1996','DD-MON-YYYY'),
+ 'C03', 'S03', 'P03');
+
+INSERT INTO SALES_ORDER VALUES
+('O19004', TO_DATE('03-APR-1996','DD-MON-YYYY'),
+ 'C01', 'S01', 'P04');
+
+INSERT INTO SALES_ORDER VALUES
+('O19005', TO_DATE('20-MAY-1996','DD-MON-YYYY'),
+ 'C04', 'S02', 'P05');
+
+INSERT INTO SALES_ORDER VALUES
+('O19006', TO_DATE('24-MAY-1996','DD-MON-YYYY'),
+ 'C05', 'S04', 'P06');
+
+COMMIT;
+
+
+-- Display all three tables
+
+SELECT * FROM CLIENT_MASTER;
+
+SELECT * FROM PRODUCTS_MASTER;
+
+SELECT * FROM SALES_ORDER;
+
+
+-- Q2. Add NOT NULL constraint to ADDRESS1 field
+--     and display the structure of CLIENT_MASTER.
+
+ALTER TABLE CLIENT_MASTER
+ADD CONSTRAINT NN_CLIENT_ADDRESS1
+CHECK (ADDRESS1 IS NOT NULL);
+
+-- Display table structure
+DESC CLIENT_MASTER;
+
+
+-- Q3. Calculate profit from PRODUCTS_MASTER.
+
+SELECT PRODUCT_NO,
+       DESCRIPTION,
+       SELL_PRICE - COST_PRICE AS PROFIT
+FROM PRODUCTS_MASTER;
+
+
+-- Q4. Calculate total cost price of stock present in hand.
+
+SELECT PRODUCT_NO,
+       DESCRIPTION,
+       QTY_ON_HAND,
+       COST_PRICE,
+       QTY_ON_HAND * COST_PRICE AS "TOTAL STOCK COST"
+FROM PRODUCTS_MASTER;
+
+
+-- Q5. Display client details whose name starts with I.
+
+SELECT *
+FROM CLIENT_MASTER
+WHERE NAME LIKE 'I%';
+
+
+-- Q6. Display client details whose name starts with R
+--     and ends with i.
+
+SELECT *
+FROM CLIENT_MASTER
+WHERE NAME LIKE 'R%i';
+
+
+-- Q7. Display clients whose name has 'a' in
+--     the third and fifth positions.
+
+SELECT *
+FROM CLIENT_MASTER
+WHERE NAME LIKE '__a_a%';
+
+
+-- Q8. Display client details whose name contains 'aa'.
+
+SELECT *
+FROM CLIENT_MASTER
+WHERE NAME LIKE '%aa%';
+
+
+-- Q9. Display client details whose name contains
+--     exactly four characters.
+
+SELECT *
+FROM CLIENT_MASTER
+WHERE LENGTH(NAME) = 4;
+
+
+-- Q10. Display clients who have not mentioned
+--      their state.
+
+SELECT *
+FROM CLIENT_MASTER
+WHERE STATE IS NULL;
+
+
+-- Q11. Display order details placed after January 1996.
+
+SELECT *
+FROM SALES_ORDER
+WHERE S_ORDER_DATE > TO_DATE('31-JAN-1996','DD-MON-YYYY');
+
+
+-- Q12. Change order date, product number and salesman number
+--      for client C01.
+
+UPDATE SALES_ORDER
+SET S_ORDER_DATE = TO_DATE('24-JUL-1996','DD-MON-YYYY'),
+    PRODUCT_NO = 'P06',
+    SALESMAN_NO = 'S04'
+WHERE CLIENT_NO = 'C01';
+
+COMMIT;
+
+-- Display updated order details
+
+SELECT *
+FROM SALES_ORDER
+WHERE CLIENT_NO = 'C01';
+
+
+-- Q13. Change the city of client C05 to Kolkata.
+
+UPDATE CLIENT_MASTER
+SET CITY = 'Kolkata'
+WHERE CLIENT_NO = 'C05';
+
+-- NOTE:
+-- This UPDATE will fail because the CITY constraint
+-- only allows Delhi, Mumbai and Chennai.
+-- Expected error: ORA-02290.
+
+
+-- Q14. Change CLIENT_NO field size to 15
+--      in all tables where it is present.
+
+-- First drop the foreign key constraint.
+
+ALTER TABLE SALES_ORDER
+DROP CONSTRAINT FK_ORDER_CLIENT;
+
+-- Modify CLIENT_NO in CLIENT_MASTER.
+
+ALTER TABLE CLIENT_MASTER
+MODIFY (CLIENT_NO VARCHAR2(15));
+
+-- Modify CLIENT_NO in SALES_ORDER.
+
+ALTER TABLE SALES_ORDER
+MODIFY (CLIENT_NO VARCHAR2(15));
+
+-- Recreate the foreign key constraint.
+
+ALTER TABLE SALES_ORDER
+ADD CONSTRAINT FK_ORDER_CLIENT
+FOREIGN KEY (CLIENT_NO)
+REFERENCES CLIENT_MASTER(CLIENT_NO);
+
+
+-- Q15. Remove record for CLIENT_NO C02
+--      from CLIENT_MASTER.
+
+DELETE FROM CLIENT_MASTER
+WHERE CLIENT_NO = 'C02';
+
+-- Expected error: ORA-02292
+-- because C02 is referenced in SALES_ORDER.
+
+
+-- Q16. Remove records from PRODUCTS_MASTER
+--      where SELL_PRICE is between 1000 and 10000.
+
+DELETE FROM PRODUCTS_MASTER
+WHERE SELL_PRICE BETWEEN 1000 AND 10000;
+
+-- Expected error: ORA-02292
+-- because some products are referenced in SALES_ORDER.
+
+
+-- Q17. Create a table with a COMPOSITE PRIMARY KEY.
+
+CREATE TABLE STUDENT_COURSE (
+    STUDENT_ID VARCHAR2(10),
+    COURSE_ID VARCHAR2(10),
+    ENROLL_DATE DATE,
+
+    CONSTRAINT PK_STUDENT_COURSE
+    PRIMARY KEY (STUDENT_ID, COURSE_ID)
+);
+
+
+-- Insert sample records into STUDENT_COURSE.
+
+INSERT INTO STUDENT_COURSE VALUES
+('ST01', 'CS101', TO_DATE('10-JAN-2026','DD-MON-YYYY'));
+
+INSERT INTO STUDENT_COURSE VALUES
+('ST01', 'CS102', TO_DATE('12-JAN-2026','DD-MON-YYYY'));
+
+INSERT INTO STUDENT_COURSE VALUES
+('ST02', 'CS101', TO_DATE('15-JAN-2026','DD-MON-YYYY'));
+
+COMMIT;
+
+SELECT * FROM STUDENT_COURSE;
+
+
+-- Q18. Create another table where the composite
+--      primary key of Q17 acts as a FOREIGN KEY.
+
+CREATE TABLE COURSE_RESULT (
+    STUDENT_ID VARCHAR2(10),
+    COURSE_ID VARCHAR2(10),
+    MARKS NUMBER(3),
+
+    CONSTRAINT FK_COURSE_RESULT
+    FOREIGN KEY (STUDENT_ID, COURSE_ID)
+    REFERENCES STUDENT_COURSE(STUDENT_ID, COURSE_ID)
+);
+
+
+-- Insert sample records into COURSE_RESULT.
+
+INSERT INTO COURSE_RESULT VALUES ('ST01', 'CS101', 85);
+INSERT INTO COURSE_RESULT VALUES ('ST01', 'CS102', 90);
+INSERT INTO COURSE_RESULT VALUES ('ST02', 'CS101', 78);
+
+COMMIT;
+
+-- Display COURSE_RESULT table.
+
+SELECT * FROM COURSE_RESULT;
